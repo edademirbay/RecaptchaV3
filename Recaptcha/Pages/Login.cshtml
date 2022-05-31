@@ -1,0 +1,60 @@
+﻿@page
+@using Microsoft.Extensions.Options
+@using Recaptcha.Models
+@model LoginModel
+@inject IOptions<CaptchaInfoModel> captchaAccessor
+@{
+    ViewData["Title"] = "Login";
+}
+
+ <script src="https://www.google.com/recaptcha/api.js?render=@captchaAccessor.Value.SiteKey"></script>
+<section>
+    <div class="row d-flex justify-content-center col-12">
+        <div class="col-4 border border-primary rounded m-20">
+           <form asp-page-handler="SubscribeNewsletter" method="post" id="newsletter-form">
+                <div class="d-flex justify-content-center">
+                    <i class="icon-map-marker icon-4x text-success"></i>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                </div>
+                <div class="form-group ">
+                    <input asp-for="Email" class="form-control" placeholder="Email address" required autofocus />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <br />
+                <div class="form-group ">
+                    <input asp-for="Password" class="form-control" placeholder="Password" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+               
+                <br />             
+                <div class="form-group">
+                    <input type="submit" class="btn btn-lg btn-success btn-block" value="Sign in"/>
+                </div>
+
+                <div>
+                     <span style="color: red; font-style: italic; margin-top: 0 !important; font-size: 75% !important;" id="g-recaptcha-error"></span>
+                </div>
+                <span></span>
+            </form>
+        </div>    
+    </div>
+</section>
+
+<script type="text/javascript">
+        grecaptcha.ready(function () {
+            grecaptcha.execute("@captchaAccessor.Value.SiteKey", { action: 'newsletter' })
+                .then(function (token) {
+                   $('#newsletter-form').prepend('<input type="hidden" name="token" value="' + token + '">');
+                    $.getJSON("@Url.Page("Index","RecaptchaVerify")&token=" + token, function (data) {
+                        if(!data){
+                            // $('#newsletter-form').find("input[type=submit]").prop("disabled",!data);
+                             document.getElementById('g-recaptcha-error').innerHTML = "Güvenlik doğrulanamadı tekrar deneyiniz.";
+                        }
+                       
+                    });
+                });
+        });
+    </script>
